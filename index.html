@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movie Recommendation System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <header class="header">
+        <div class="container header-content">
+            <a href="/" class="logo">
+                <i class="fas fa-film"></i> MovieLens
+            </a>
+        </div>
+    </header>
+
+    <section class="search-section">
+        <div class="container search-container">
+            <h1 class="search-title">Discover Your Next Favorite Movie</h1>
+            <p class="search-subtitle">Get personalized movie recommendations based on your favorite films</p>
+            
+            <form method="POST" class="search-form" id="searchForm">
+                <input 
+                    type="text" 
+                    name="movie" 
+                    class="search-input" 
+                    placeholder="Enter a movie title (e.g., 'Avatar', 'Inception')"
+                    required
+                >
+                <button type="submit" class="search-button">
+                    <i class="fas fa-search"></i> Find Similar Movies
+                </button>
+            </form>
+        </div>
+    </section>
+
+    <section class="recommendations-section">
+        <div class="container">
+            <div class="loading" id="loadingSpinner">
+                <div class="loading-spinner"></div>
+                <p>Finding the best movie recommendations...</p>
+            </div>
+
+            {% if recommendations %}
+                {% if "not found" in recommendations[0] %}
+                    <div class="not-found">
+                        <i class="fas fa-exclamation-circle fa-2x"></i>
+                        <h2>{{ recommendations[0] }}</h2>
+                        <div class="suggestions">
+                            {% for movie in recommendations[1:] %}
+                                <div class="suggestion-item">{{ movie }}</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% else %}
+                    <h2 class="recommendations-title">{{ recommendations[0] }}</h2>
+                    {% for i in range(1, recommendations|length, 11) %}
+                        <div class="movie-card">
+                            <div class="movie-title">
+                                {{ recommendations[i].split('. ')[1] }}
+                                <span class="similarity-score">
+                                    {{ recommendations[i+8].split(': ')[1] }}
+                                </span>
+                            </div>
+                            
+                            <div class="movie-meta">
+                                <div class="meta-item">
+                                    <span class="meta-label">Director</span>
+                                    <span class="meta-value">{{ recommendations[i+1].split(': ')[1] }}</span>
+                                </div>
+                                
+                                <div class="meta-item">
+                                    <span class="meta-label">Starring</span>
+                                    <span class="meta-value">{{ recommendations[i+2].split(': ')[1] }}</span>
+                                </div>
+                                
+                                <div class="meta-item">
+                                    <span class="meta-label">Genres</span>
+                                    <span class="meta-value">{{ recommendations[i+3].split(': ')[1] }}</span>
+                                </div>
+                                
+                                <div class="meta-item">
+                                    <span class="meta-label">Rating</span>
+                                    <span class="meta-value">
+                                        {% set rating = recommendations[i+4].split(': ')[1].split('/')[0]|float %}
+                                        <span class="movie-rating {{ 'rating-high' if rating >= 7 else 'rating-medium' if rating >= 5 else 'rating-low' }}">
+                                            {{ rating }}/10
+                                        </span>
+                                        ({{ recommendations[i+4].split('(')[1].split(')')[0] }})
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="movie-meta">
+                                <div class="meta-item">
+                                    <span class="meta-label">Popularity</span>
+                                    <span class="meta-value">{{ recommendations[i+5].split(': ')[1] }}</span>
+                                </div>
+                                
+                                <div class="meta-item">
+                                    <span class="meta-label">Budget</span>
+                                    <span class="meta-value">{{ recommendations[i+6].split(': ')[1] }}</span>
+                                </div>
+                                
+                                <div class="meta-item">
+                                    <span class="meta-label">Revenue</span>
+                                    <span class="meta-value">{{ recommendations[i+7].split(': ')[1] }}</span>
+                                </div>
+                            </div>
+
+                            <div class="movie-overview">
+                                <p>{{ recommendations[i+9].split(': ')[1] }}</p>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endif %}
+        </div>
+    </section>
+
+    <script>
+        document.getElementById('searchForm').addEventListener('submit', function() {
+            document.getElementById('loadingSpinner').style.display = 'block';
+        });
+    </script>
+</body>
+</html>
