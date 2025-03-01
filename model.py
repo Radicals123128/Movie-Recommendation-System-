@@ -1,5 +1,5 @@
 import pandas as pd
-df = pd.read_csv('compressed_data.csv', compression='zip')
+df = pd.read_csv('compressed_data.csv', compression='gzip')
 
 
 # Check existing columns
