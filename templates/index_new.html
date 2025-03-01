@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MovieLens - Discover Your Next Favorite Movie</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+</head>
+<body>
+    <header class="header animate__animated animate__fadeIn">
+        <div class="container header-content">
+            <a href="/" class="logo">
+                <i class="fas fa-film"></i> MovieLens
+            </a>
+        </div>
+    </header>
+
+    <section class="search-section animate__animated animate__fadeInUp">
+        <div class="container search-container">
+            <h1 class="search-title">Discover Your Next Favorite Movie</h1>
+            <p class="search-subtitle">Get personalized movie recommendations based on your favorite films</p>
+            
+            <form method="POST" class="search-form" id="searchForm">
+                <div class="search-input-container">
+                    <i class="fas fa-search search-icon"></i>
+                    <input 
+                        type="text" 
+                        name="movie" 
+                        class="search-input" 
+                        placeholder="Enter a movie title (e.g., 'Avatar', 'Inception')"
+                        required
+                    >
+                </div>
+                <button type="submit" class="search-button">
+                    <i class="fas fa-magic"></i> Find Similar Movies
+                </button>
+            </form>
+        </div>
+    </section>
+
+    <section class="recommendations-section">
+        <div class="container">
+            <div class="loading" id="loadingSpinner">
+                <div class="loading-spinner"></div>
+                <p>Finding the best movie recommendations...</p>
+            </div>
+
+            {% if recommendations %}
+                {% if "not found" in recommendations[0] %}
+                    <div class="not-found animate__animated animate__fadeIn">
+                        <i class="fas fa-exclamation-circle fa-2x"></i>
+                        <h2>{{ recommendations[0] }}</h2>
+                        <div class="suggestions">
+                            <h3>Did you mean one of these?</h3>
+                            {% for movie in recommendations[1:] %}
+                                <div class="suggestion-item">
+                                    <i class="fas fa-film"></i>
+                                    {{ movie }}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% else %}
+                    <h2 class="recommendations-title animate__animated animate__fadeIn">{{ recommendations[0] }}</h2>
+                    {% for i in range(1, recommendations|length, 11) %}
+                        <div class="movie-card animate__animated animate__fadeInUp">
+                            <div class="movie-header">
+                                <h3 class="movie-title">
+                                    {{ recommendations[i].split('. ')[1] }}
+                                </h3>
+                                <span class="similarity-score" title="Similarity Score">
+                                    <i class="fas fa-percentage"></i>
+                                    {{ recommendations[i+8].split(': ')[1] }}
+                                </span>
+                            </div>
+                            
+                            <div class="movie-content">
+                                <div class="movie-meta">
+                                    <div class="meta-item">
+                                        <span class="meta-label"><i class="fas fa-video"></i> Director</span>
+                                        <span class="meta-value">{{ recommendations[i+1].split(': ')[1] }}</span>
+                                    </div>
+                                    
+                                    <div class="meta-item">
+                                        <span class="meta-label"><i class="fas fa-users"></i> Starring</span>
+                                        <span class="meta-value">{{ recommendations[i+2].split(': ')[1] }}</span>
+                                    </div>
+                                    
+                                    <div class="meta-item">
+                                        <span class="meta-label"><i class="fas fa-theater-masks"></i> Genres</span>
+                                        <span class="meta-value">{{ recommendations[i+3].split(': ')[1] }}</span>
+                                    </div>
+                                    
+                                    <div class="meta-item">
+                                        <span class="meta-label"><i class="fas fa-star"></i> Rating</span>
+                                        <span class="meta-value">
+                                            {% set rating = recommendations[i+4].split(': ')[1].split('/')[0]|float %}
+                                            <span class="movie-rating {{ 'rating-high' if rating >= 7 else 'rating-medium' if rating >= 5 else 'rating-low' }}">
+                                                {{ rating }}/10
+                                            </span>
+                                            <span class="vote-count">({{ recommendations[i+4].split('(')[1].split(')')[0] }})</span>
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div class="movie-stats">
+                                    <div class="stat-item">
+                                        <span class="stat-label"><i class="fas fa-fire-alt"></i> Popularity</span>
+                                        <span class="stat-value">{{ recommendations[i+5].split(': ')[1] }}</span>
+                                    </div>
+                                    
+                                    <div class="stat-item">
+                                        <span class="stat-label"><i class="fas fa-dollar-sign"></i> Budget</span>
+                                        <span class="stat-value">{{ recommendations[i+6].split(': ')[1] }}</span>
+                                    </div>
+                                    
+                                    <div class="stat-item">
+                                        <span class="stat-label"><i class="fas fa-chart-line"></i> Revenue</span>
+                                        <span class="stat-value">{{ recommendations[i+7].split(': ')[1] }}</span>
+                                    </div>
+                                </div>
+
+                                <div class="movie-overview">
+                                    <h4><i class="fas fa-info-circle"></i> Overview</h4>
+                                    <p>{{ recommendations[i+9].split(': ')[1] }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endif %}
+        </div>
+    </section>
+
+    <script>
+        document.getElementById('searchForm').addEventListener('submit', function() {
+            document.getElementById('loadingSpinner').style.display = 'block';
+            // Add fade effect to existing content
+            const recommendations = document.querySelector('.recommendations-section');
+            if (recommendations) {
+                recommendations.style.opacity = '0.5';
+                recommendations.style.transition = 'opacity 0.3s ease';
+            }
+        });
+
+        // Add hover effect to movie cards
+        document.querySelectorAll('.movie-card').forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-5px)';
+                this.style.boxShadow = '0 8px 16px rgba(0,0,0,0.2)';
+            });
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0)';
+                this.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
+            });
+        });
+    </script>
+</body>
+</html>
