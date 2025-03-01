@@ -10,10 +10,8 @@ app = Flask(__name__)
 
 def load_and_process_data():
     try:
-        # Load both datasets
-        credits_df = pd.read_csv("tmdb_5000_credits.csv")
-        movies_df = pd.read_csv("tmdb_5000_movies.csv")
-
+        credits_df = pd.read_csv("tmdb_5000_credits.csv.gz", compression="gzip")
+        movies_df = pd.read_csv("tmdb_5000_movies.csv.gz", compression="gzip")
         # Merge the datasets on movie_id
         credits_df.columns = ['movie_id', 'title', 'cast', 'crew']
         movies_df = movies_df.rename(columns={'id': 'movie_id'})
