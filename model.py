@@ -1,6 +1,7 @@
 import pandas as pd
-df = pd.read_csv('compressed_data.csv', compression='gzip')
 
+
+df = pd.read_csv("movies.csv")
 
 # Check existing columns
 print(df.columns)
